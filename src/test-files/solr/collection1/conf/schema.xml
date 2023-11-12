@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<schema name="some-schema" version="1.6">
+  <fieldType name="string" class="solr.StrField"/>
+  <fieldType name="float_array" class="io.github.tmanabe.demo2.FloatArrayField">
+    <analyzer type="index">
+      <tokenizer class="io.github.tmanabe.stream.DistilBertJapaneseTokenizerFactory"/>
+      <filter class="io.github.tmanabe.stream.LineDistilBertTokenFilterFactory"/>
+      <filter class="io.github.tmanabe.stream.ByStringTokenSelectorFactory" string="last_hidden_state"/>
+      <filter class="io.github.tmanabe.stream.AveragePoolingTokenFilterFactory"/>
+      <filter class="io.github.tmanabe.demo2.VectorNormalizerTokenFilterFactory"/>
+    </analyzer>
+    <analyzer type="query">
+      <tokenizer class="io.github.tmanabe.demo2.Base64ToFloatArrayTokenizerFactory"/>
+      <filter class="io.github.tmanabe.demo2.VectorNormalizerTokenFilterFactory"/>
+    </analyzer>
+  </fieldType>
+
+  <field name="id" type="string"/>
+  <uniqueKey>id</uniqueKey>
+
+  <field name="vector" type="float_array" docValues="true"/>
+</schema>

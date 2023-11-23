@@ -4,15 +4,14 @@ import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.function.Consumer;
 
 public class PythonProcess {
     @FunctionalInterface
@@ -26,15 +25,14 @@ public class PythonProcess {
     private final DataInputStream dataInputStream;
 
     public PythonProcess(String resourceName, HealthChecker healthChecker) throws IOException {
-        URL url = this.getClass().getResource(resourceName);
+        InputStream inputStream = this.getClass().getResourceAsStream("/" + resourceName);
 
-        if (null == url) throw new IOException("Resource not found: " + resourceName);
+        if (null == inputStream) throw new IOException("Resource not found: " + resourceName);
 
-        File source = new File(url.getFile());
         File target = Files.createTempFile(resourceName, null).toFile();
         try {
-            try (FileReader fileReader = new FileReader(source);
-                 BufferedReader bufferedReader = new BufferedReader(fileReader);
+            try (InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+                 BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
                  PrintWriter printWriter = new PrintWriter(target)) {
                 String line = bufferedReader.readLine();
                 while (null != line) {

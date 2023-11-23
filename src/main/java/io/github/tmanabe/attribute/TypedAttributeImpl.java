@@ -22,11 +22,6 @@ public abstract class TypedAttributeImpl<T> extends AttributeImpl implements Typ
   }
 
   @Override
-  public void reflectWith(AttributeReflector reflector) {
-    reflector.reflect(this.getClass(), t.getClass().getSimpleName(), get());
-  }
-
-  @Override
   public void copyTo(AttributeImpl target) {
     if (target instanceof TypedAttributeImpl) {
       ((TypedAttribute) target).set(t);

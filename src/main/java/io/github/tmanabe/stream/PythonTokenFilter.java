@@ -3,16 +3,19 @@ package io.github.tmanabe.stream;
 import io.github.tmanabe.PythonProcess;
 import io.github.tmanabe.Safetensors;
 import io.github.tmanabe.SafetensorsBuilder;
+import io.github.tmanabe.TensorSummarizer;
 import io.github.tmanabe.attribute.IntegerListAttribute;
 import io.github.tmanabe.attribute.LongArrayAttribute;
 import io.github.tmanabe.attribute.StringAttribute;
 import io.github.tmanabe.demo2.FloatArrayAttribute;
 import org.apache.lucene.analysis.TokenFilter;
 import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 
 import java.io.IOException;
 import java.nio.FloatBuffer;
 import java.util.ArrayDeque;
+import java.util.List;
 import java.util.Queue;
 
 public class PythonTokenFilter extends TokenFilter {
@@ -21,6 +24,7 @@ public class PythonTokenFilter extends TokenFilter {
     private final IntegerListAttribute integerListAttribute = addAttribute(IntegerListAttribute.class);
     private final LongArrayAttribute longArrayAttribute = addAttribute(LongArrayAttribute.class);
     private final FloatArrayAttribute floatArrayAttribute = addAttribute(FloatArrayAttribute.class);
+    private final CharTermAttribute charTermAttribute = addAttribute(CharTermAttribute.class);  // For debugging
 
     private Safetensors safetensors = null;
     private Queue<String> tensorNamesToOutput = null;
@@ -59,7 +63,8 @@ public class PythonTokenFilter extends TokenFilter {
             String tensorName = tensorNamesToOutput.poll();
             clearAttributes();
             stringAttribute.set(tensorName);
-            integerListAttribute.set(safetensors.getHeader().get(tensorName).getShape());
+            List<Integer> shape = safetensors.getHeader().get(tensorName).getShape();
+            integerListAttribute.set(shape);
             {
                 FloatBuffer floatBuffer = safetensors.getFloatBuffer(tensorName);
                 if (null == floats || floatBuffer.limit() != floats.length) {
@@ -68,6 +73,7 @@ public class PythonTokenFilter extends TokenFilter {
                 floatBuffer.get(floats);
                 floatArrayAttribute.setFloatArray(floats);
             }
+            new TensorSummarizer(charTermAttribute, tensorName, shape).append(floats);
             return true;
         }
     }

@@ -23,6 +23,7 @@ public class PythonProcess {
 
     private final DataOutputStream dataOutputStream;
     private final DataInputStream dataInputStream;
+    private final BufferedReader bufferedReader;
 
     public PythonProcess(String resourceName, HealthChecker healthChecker) throws IOException {
         InputStream inputStream = this.getClass().getResourceAsStream("/" + resourceName);
@@ -43,6 +44,7 @@ public class PythonProcess {
             Process process = new ProcessBuilder(PYTHON, target.getAbsolutePath()).start();
             this.dataOutputStream = new DataOutputStream(process.getOutputStream());
             this.dataInputStream = new DataInputStream(process.getInputStream());
+            this.bufferedReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
             healthChecker.check(this);
         } finally {
             boolean ignore = target.delete();
@@ -52,24 +54,51 @@ public class PythonProcess {
     private void writeContentLength(long l) throws IOException {
         byte[] littleEndianLong = new byte[Long.BYTES];
         ByteBuffer.wrap(littleEndianLong).order(ByteOrder.LITTLE_ENDIAN).asLongBuffer().put(l);
-        dataOutputStream.write(littleEndianLong);
+        try {
+            dataOutputStream.write(littleEndianLong);
+        } catch (IOException e) {
+            throw new IOException(readError(), e);
+        }
     }
 
     public void write(String string) throws IOException {  // To tokenize
         byte[] bytes = string.getBytes(StandardCharsets.UTF_8);
-        writeContentLength(bytes.length);
-        dataOutputStream.write(bytes);
-        dataOutputStream.flush();
+        try {
+            writeContentLength(bytes.length);
+            dataOutputStream.write(bytes);
+            dataOutputStream.flush();
+        } catch (IOException e) {
+            throw new IOException(readError(), e);
+        }
     }
 
     public void write(SafetensorsBuilder builder) throws IOException {
-        writeContentLength(builder.contentLength());
-        builder.build().save(dataOutputStream);
-        dataOutputStream.flush();
+        try {
+            writeContentLength(builder.contentLength());
+            builder.build().save(dataOutputStream);
+            dataOutputStream.flush();
+        } catch (IOException e) {
+            throw new IOException(readError(), e);
+        }
+    }
+
+    public String readError() throws IOException {
+        StringBuilder stringBuilder = new StringBuilder();
+        String line = bufferedReader.readLine();
+        while (null != line) {
+            stringBuilder.append(line);
+            stringBuilder.append('\n');
+            line = bufferedReader.readLine();
+        }
+        return stringBuilder.toString();
     }
 
     public Safetensors read() throws IOException {
-        dataInputStream.readLong();  // Skip unused content-length
-        return Safetensors.load(dataInputStream);
+        try {
+            dataInputStream.readLong();  // Skip unused content-length
+            return Safetensors.load(dataInputStream);
+        } catch (IOException e) {
+            throw new IOException(readError(), e);
+        }
     }
 }

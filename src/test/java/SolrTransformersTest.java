@@ -44,6 +44,6 @@ public class SolrTransformersTest extends RestTestBase {
         query.add(Demo2Params.DEMO2_FIELD_NAME, "vector");
         query.set(Demo2Params.DEMO2_QUERY_VECTOR, base64StringOfConstantVector(768));
         assertJQ("/select" + query.toQueryString(),
-                "/response/numFound==1", "/response/docs/[0]/score==1.9828625");
+                "/response/numFound==1", "/response/docs/[0]/score==1.9815359");
     }
 }

@@ -28,7 +28,6 @@ public class PythonTokenFilter extends TokenFilter {
 
     private Safetensors safetensors = null;
     private Queue<String> tensorNamesToOutput = null;
-    private float[] floats = null;
 
     public PythonTokenFilter(TokenStream input, PythonProcess pythonProcess) {
         super(input);
@@ -67,13 +66,11 @@ public class PythonTokenFilter extends TokenFilter {
             integerListAttribute.set(shape);
             {
                 FloatBuffer floatBuffer = safetensors.getFloatBuffer(tensorName);
-                if (null == floats || floatBuffer.limit() != floats.length) {
-                    floats = new float[floatBuffer.limit()];
-                }
+                float[] floats = new float[floatBuffer.limit()];
                 floatBuffer.get(floats);
                 floatArrayAttribute.setFloatArray(floats);
             }
-            new TensorSummarizer(charTermAttribute, tensorName, shape).append(floats);
+            new TensorSummarizer(charTermAttribute, tensorName, shape).append(floatArrayAttribute.getFloatArray());
             return true;
         }
     }

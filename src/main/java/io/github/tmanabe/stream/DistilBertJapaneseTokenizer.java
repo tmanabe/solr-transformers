@@ -26,8 +26,6 @@ public class DistilBertJapaneseTokenizer extends Tokenizer {
 
     private Safetensors safetensors = null;
     private Queue<String> tensorNamesToOutput = null;
-    private long[] longs = null;
-
 
     public DistilBertJapaneseTokenizer(AttributeFactory factory, PythonProcess pythonProcess) {
         super(factory);
@@ -55,13 +53,11 @@ public class DistilBertJapaneseTokenizer extends Tokenizer {
             integerListAttribute.set(shape);
             {
                 LongBuffer longBuffer = safetensors.getLongBuffer(tensorName);
-                if (null == longs || longBuffer.limit() != longs.length) {
-                    longs = new long[longBuffer.limit()];
-                }
+                long[] longs = new long[longBuffer.limit()];
                 longBuffer.get(longs);
                 longArrayAttribute.set(longs);
             }
-            new TensorSummarizer(charTermAttribute, tensorName, shape).append(longs);
+            new TensorSummarizer(charTermAttribute, tensorName, shape).append(longArrayAttribute.get());
             return true;
         }
     }

@@ -1,17 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <schema name="some-schema" version="1.6">
   <fieldType name="string" class="solr.StrField"/>
-  <fieldType name="float_array" class="io.github.tmanabe.demo2.FloatArrayField">
-    <analyzer type="index">
+  <fieldType name="float_array" class="io.github.tmanabe.schema.FloatArrayField">
+    <analyzer>
       <tokenizer class="io.github.tmanabe.stream.DistilBertJapaneseTokenizerFactory"/>
       <filter class="io.github.tmanabe.stream.LineDistilBertTokenFilterFactory"/>
       <filter class="io.github.tmanabe.stream.ByStringTokenSelectorFactory" string="last_hidden_state"/>
       <filter class="io.github.tmanabe.stream.AveragePoolingTokenFilterFactory"/>
-      <filter class="io.github.tmanabe.stream.ReflectableVectorNormalizerTokenFilterFactory"/>
-    </analyzer>
-    <analyzer type="query">
-      <tokenizer class="io.github.tmanabe.demo2.Base64ToFloatArrayTokenizerFactory"/>
-      <filter class="io.github.tmanabe.stream.ReflectableVectorNormalizerTokenFilterFactory"/>
+      <filter class="io.github.tmanabe.stream.AveragePoolingTokenFilterFactory"/> <!-- for testing -->
     </analyzer>
   </fieldType>
 

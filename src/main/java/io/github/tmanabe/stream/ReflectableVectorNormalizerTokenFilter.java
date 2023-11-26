@@ -1,9 +1,9 @@
 package io.github.tmanabe.stream;
 
 import io.github.tmanabe.TensorSummarizer;
+import io.github.tmanabe.attribute.FloatArrayAttribute;
 import io.github.tmanabe.attribute.IntegerListAttribute;
 import io.github.tmanabe.attribute.StringAttribute;
-import io.github.tmanabe.demo2.FloatArrayAttribute;
 import org.apache.lucene.analysis.TokenFilter;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
@@ -25,7 +25,7 @@ public class ReflectableVectorNormalizerTokenFilter extends TokenFilter {
     @Override
     public final boolean incrementToken() throws IOException {
         if (input.incrementToken()) {
-            float[] floatArray = floatArrayAttribute.getFloatArray();
+            float[] floatArray = floatArrayAttribute.get();
             if (null == floatArray) {
                 return true;
             }

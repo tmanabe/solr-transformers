@@ -21,13 +21,7 @@
     <requestParsers enableStreamBody="true"/>
   </requestDispatcher>
 
-  <searchComponent name="demo2Component" class="io.github.tmanabe.demo2.Demo2SearchComponent"/>
-
-  <requestHandler name="/select" class="solr.SearchHandler">
-    <arr name="last-components">
-      <str>demo2Component</str>
-    </arr>
-  </requestHandler>
+  <requestHandler name="/select" class="solr.SearchHandler"/>
 
   <requestHandler name="/update" class="solr.UpdateRequestHandler"/>
 </config>

@@ -4,10 +4,10 @@ import io.github.tmanabe.PythonProcess;
 import io.github.tmanabe.SafetensorsBuilder;
 import io.github.tmanabe.SafetensorsViewer;
 import io.github.tmanabe.TensorSummarizer;
+import io.github.tmanabe.attribute.FloatArrayAttribute;
 import io.github.tmanabe.attribute.IntegerListAttribute;
 import io.github.tmanabe.attribute.LongArrayAttribute;
 import io.github.tmanabe.attribute.StringAttribute;
-import io.github.tmanabe.demo2.FloatArrayAttribute;
 import org.apache.lucene.analysis.TokenFilter;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
@@ -43,7 +43,7 @@ public class PythonTokenFilter extends TokenFilter {
                 if (null != longArray) {
                     safetensorsBuilder.add(stringAttribute.get(), integerListAttribute.get(), longArray);
                 }
-                float[] floatArray = floatArrayAttribute.getFloatArray();
+                float[] floatArray = floatArrayAttribute.get();
                 if (null != floatArray) {
                     safetensorsBuilder.add(stringAttribute.get(), integerListAttribute.get(), floatArray);
                 }
@@ -68,9 +68,9 @@ public class PythonTokenFilter extends TokenFilter {
                 FloatBuffer floatBuffer = safetensorsViewer.getFloatBuffer(tensorName);
                 float[] floats = new float[floatBuffer.limit()];
                 floatBuffer.get(floats);
-                floatArrayAttribute.setFloatArray(floats);
+                floatArrayAttribute.set(floats);
             }
-            new TensorSummarizer(charTermAttribute, tensorName, shape).append(floatArrayAttribute.getFloatArray());
+            new TensorSummarizer(charTermAttribute, tensorName, shape).append(floatArrayAttribute.get());
             return true;
         }
     }

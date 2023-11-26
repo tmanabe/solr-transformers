@@ -20,11 +20,4 @@ public abstract class TypedAttributeImpl<T> extends AttributeImpl implements Typ
   public void clear() {
     t = null;
   }
-
-  @Override
-  public void copyTo(AttributeImpl target) {
-    if (target instanceof TypedAttributeImpl) {
-      ((TypedAttribute) target).set(t);
-    }
-  }
 }

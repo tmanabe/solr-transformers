@@ -17,6 +17,8 @@ public class SolrTransformersTest extends RestTestBase {
     public static void setUpBeforeClass() throws Exception {
         File testHome = createTempDir().toFile();
         FileUtils.copyDirectory(getFile("solr"), testHome);
+        File testLog = createTempDir().toFile();
+        System.setProperty("solr.log.dir", testLog.getAbsolutePath());
 
         createJettyAndHarness(testHome.getAbsolutePath(), "solrconfig.xml", "schema.xml", "/solr", true, null);
     }

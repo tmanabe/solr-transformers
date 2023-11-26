@@ -20,4 +20,9 @@ public abstract class TypedAttributeImpl<T> extends AttributeImpl implements Typ
   public void clear() {
     t = null;
   }
+
+  @Override
+  public void reflectWith(AttributeReflector reflector) {
+    reflector.reflect(this.getClass(), getKey(), get());
+  }
 }

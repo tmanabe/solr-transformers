@@ -4,26 +4,26 @@ import io.github.tmanabe.PythonProcess;
 import io.github.tmanabe.SafetensorsBuilder;
 import io.github.tmanabe.SafetensorsViewer;
 import io.github.tmanabe.TensorSummarizer;
-import io.github.tmanabe.attribute.FloatArrayAttribute;
-import io.github.tmanabe.attribute.IntegerListAttribute;
-import io.github.tmanabe.attribute.LongArrayAttribute;
-import io.github.tmanabe.attribute.StringAttribute;
+import io.github.tmanabe.attribute.FloatBufferAttribute;
+import io.github.tmanabe.attribute.ShapeAttribute;
+import io.github.tmanabe.attribute.LongBufferAttribute;
+import io.github.tmanabe.attribute.NameAttribute;
 import org.apache.lucene.analysis.TokenFilter;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 
 import java.io.IOException;
 import java.nio.FloatBuffer;
+import java.nio.LongBuffer;
 import java.util.ArrayDeque;
-import java.util.List;
 import java.util.Queue;
 
 public class PythonTokenFilter extends TokenFilter {
     private final PythonProcess pythonProcess;
-    private final StringAttribute stringAttribute = addAttribute(StringAttribute.class);
-    private final IntegerListAttribute integerListAttribute = addAttribute(IntegerListAttribute.class);
-    private final LongArrayAttribute longArrayAttribute = addAttribute(LongArrayAttribute.class);
-    private final FloatArrayAttribute floatArrayAttribute = addAttribute(FloatArrayAttribute.class);
+    private final NameAttribute nameAttribute = addAttribute(NameAttribute.class);
+    private final ShapeAttribute shapeAttribute = addAttribute(ShapeAttribute.class);
+    private final LongBufferAttribute longBufferAttribute = addAttribute(LongBufferAttribute.class);
+    private final FloatBufferAttribute floatBufferAttribute = addAttribute(FloatBufferAttribute.class);
     private final CharTermAttribute charTermAttribute = addAttribute(CharTermAttribute.class);  // For debugging
 
     private SafetensorsViewer safetensorsViewer = null;
@@ -39,13 +39,13 @@ public class PythonTokenFilter extends TokenFilter {
         if (null == safetensorsViewer) {
             SafetensorsBuilder safetensorsBuilder = new SafetensorsBuilder();
             while (input.incrementToken()) {
-                long[] longArray = longArrayAttribute.get();
-                if (null != longArray) {
-                    safetensorsBuilder.add(stringAttribute.get(), integerListAttribute.get(), longArray);
+                LongBuffer longBuffer = longBufferAttribute.get();
+                if (null != longBuffer) {
+                    safetensorsBuilder.add(nameAttribute.get(), shapeAttribute.get(), longBuffer);
                 }
-                float[] floatArray = floatArrayAttribute.get();
-                if (null != floatArray) {
-                    safetensorsBuilder.add(stringAttribute.get(), integerListAttribute.get(), floatArray);
+                FloatBuffer floatBuffer = floatBufferAttribute.get();
+                if (null != floatBuffer) {
+                    safetensorsBuilder.add(nameAttribute.get(), shapeAttribute.get(), floatBuffer);
                 }
             }
             synchronized (pythonProcess) {
@@ -61,16 +61,10 @@ public class PythonTokenFilter extends TokenFilter {
         } else {
             String tensorName = tensorNamesToOutput.poll();
             clearAttributes();
-            stringAttribute.set(tensorName);
-            List<Integer> shape = safetensorsViewer.getHeader().get(tensorName).getShape();
-            integerListAttribute.set(shape);
-            {
-                FloatBuffer floatBuffer = safetensorsViewer.getFloatBuffer(tensorName);
-                float[] floats = new float[floatBuffer.limit()];
-                floatBuffer.get(floats);
-                floatArrayAttribute.set(floats);
-            }
-            new TensorSummarizer(charTermAttribute, tensorName, shape).append(floatArrayAttribute.get());
+            nameAttribute.set(tensorName);
+            shapeAttribute.set(safetensorsViewer.getHeader().get(tensorName).getShape());
+            floatBufferAttribute.set(safetensorsViewer.getFloatBuffer(tensorName));
+            new TensorSummarizer(charTermAttribute, nameAttribute, shapeAttribute).append(floatBufferAttribute);
             return true;
         }
     }

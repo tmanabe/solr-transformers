@@ -4,7 +4,6 @@
 
 ### Java Packages
 
-- [demo_plugin_9.2.1](https://github.com/tmanabe/solr-plugin-samples/pull/1)
 - [safetensors-java](https://github.com/tmanabe/safetensors-java)
 
 ### Python Packages
@@ -21,14 +20,15 @@
 ### Schema
 
 ```xml
-  <fieldType name="float_array" class="io.github.tmanabe.demo2.FloatArrayField">
-    <analyzer type="index">
+  <fieldType name="float_array" class="io.github.tmanabe.schema.FloatArrayField">
+    <analyzer>
       <tokenizer class="io.github.tmanabe.stream.DistilBertJapaneseTokenizerFactory"/>
       <filter class="io.github.tmanabe.stream.LineDistilBertTokenFilterFactory"/>
-      <filter class="io.github.tmanabe.stream.ByStringTokenSelectorFactory" string="last_hidden_state"/>
+      <filter class="io.github.tmanabe.stream.ByNameTokenSelectorFactory" select="last_hidden_state"/>
       <filter class="io.github.tmanabe.stream.AveragePoolingTokenFilterFactory"/>
-      <filter class="io.github.tmanabe.stream.ReflectableVectorNormalizerTokenFilterFactory"/>
+      <filter class="io.github.tmanabe.stream.AveragePoolingTokenFilterFactory"/> <!-- For simple testing -->
     </analyzer>
+  </fieldType>
 ```
 
 ### Analysis Screen

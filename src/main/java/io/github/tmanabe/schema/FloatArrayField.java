@@ -1,6 +1,6 @@
 package io.github.tmanabe.schema;
 
-import io.github.tmanabe.attribute.FloatArrayAttribute;
+import io.github.tmanabe.attribute.FloatBufferAttribute;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.document.BinaryDocValuesField;
@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.nio.ByteBuffer;
+import java.nio.FloatBuffer;
 
 /**
  * A FieldType for float arrays.
@@ -49,13 +50,13 @@ public class FloatArrayField extends BinaryField {
     } else {
       String strVal = val.toString();
       Analyzer analyzer = field.getType().getIndexAnalyzer();
-      float[] documentVector;
+      FloatBuffer floatBuffer;
       try (TokenStream tokenStream = analyzer.tokenStream(field.getName(), strVal)) {
         tokenStream.reset();
         if (!tokenStream.incrementToken()) {
           throw new IOException("In demo2, just one token is expected");
         }
-        documentVector = tokenStream.getAttribute(FloatArrayAttribute.class).get();
+        floatBuffer = tokenStream.getAttribute(FloatBufferAttribute.class).get();
         if (tokenStream.incrementToken()) {
           throw new IOException("In demo2, just one token is expected");
         }
@@ -64,8 +65,8 @@ public class FloatArrayField extends BinaryField {
         throw new SolrException(SolrException.ErrorCode.SERVER_ERROR,
                                 "Error while creating field '" + field + "' from value '" + strVal + "'", e);
       }
-      buf = new byte[Float.BYTES * documentVector.length];
-      ByteBuffer.wrap(buf).asFloatBuffer().put(documentVector);
+      buf = new byte[Float.BYTES * floatBuffer.limit()];
+      ByteBuffer.wrap(buf).asFloatBuffer().put(floatBuffer);
       len = buf.length;
     }
     return new BinaryDocValuesField(field.getName(), new BytesRef(buf, offset, len));

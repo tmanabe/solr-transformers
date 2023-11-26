@@ -2,26 +2,24 @@ package io.github.tmanabe.stream;
 
 import io.github.tmanabe.SafetensorsViewer;
 import io.github.tmanabe.TensorSummarizer;
-import io.github.tmanabe.attribute.LongArrayAttribute;
+import io.github.tmanabe.attribute.LongBufferAttribute;
 import io.github.tmanabe.PythonProcess;
-import io.github.tmanabe.attribute.StringAttribute;
-import io.github.tmanabe.attribute.IntegerListAttribute;
+import io.github.tmanabe.attribute.NameAttribute;
+import io.github.tmanabe.attribute.ShapeAttribute;
 import org.apache.commons.io.IOUtils;
 import org.apache.lucene.analysis.Tokenizer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.util.AttributeFactory;
 
 import java.io.IOException;
-import java.nio.LongBuffer;
 import java.util.ArrayDeque;
-import java.util.List;
 import java.util.Queue;
 
 public class DistilBertJapaneseTokenizer extends Tokenizer {
     private final PythonProcess pythonProcess;
-    private final StringAttribute stringAttribute = addAttribute(StringAttribute.class);
-    private final IntegerListAttribute integerListAttribute = addAttribute(IntegerListAttribute.class);
-    private final LongArrayAttribute longArrayAttribute = addAttribute(LongArrayAttribute.class);
+    private final NameAttribute nameAttribute = addAttribute(NameAttribute.class);
+    private final ShapeAttribute shapeAttribute = addAttribute(ShapeAttribute.class);
+    private final LongBufferAttribute longBufferAttribute = addAttribute(LongBufferAttribute.class);
     private final CharTermAttribute charTermAttribute = addAttribute(CharTermAttribute.class);  // For debugging
 
     private SafetensorsViewer safetensorsViewer = null;
@@ -48,16 +46,10 @@ public class DistilBertJapaneseTokenizer extends Tokenizer {
         } else {
             String tensorName = tensorNamesToOutput.poll();
             clearAttributes();
-            stringAttribute.set(tensorName);
-            List<Integer> shape = safetensorsViewer.getHeader().get(tensorName).getShape();
-            integerListAttribute.set(shape);
-            {
-                LongBuffer longBuffer = safetensorsViewer.getLongBuffer(tensorName);
-                long[] longs = new long[longBuffer.limit()];
-                longBuffer.get(longs);
-                longArrayAttribute.set(longs);
-            }
-            new TensorSummarizer(charTermAttribute, tensorName, shape).append(longArrayAttribute.get());
+            nameAttribute.set(tensorName);
+            shapeAttribute.set(safetensorsViewer.getHeader().get(tensorName).getShape());
+            longBufferAttribute.set(safetensorsViewer.getLongBuffer(tensorName));
+            new TensorSummarizer(charTermAttribute, nameAttribute, shapeAttribute).append(longBufferAttribute);
             return true;
         }
     }

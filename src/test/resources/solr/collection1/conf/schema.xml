@@ -5,9 +5,9 @@
     <analyzer>
       <tokenizer class="io.github.tmanabe.stream.DistilBertJapaneseTokenizerFactory"/>
       <filter class="io.github.tmanabe.stream.LineDistilBertTokenFilterFactory"/>
-      <filter class="io.github.tmanabe.stream.ByStringTokenSelectorFactory" string="last_hidden_state"/>
+      <filter class="io.github.tmanabe.stream.ByNameTokenSelectorFactory" select="last_hidden_state"/>
       <filter class="io.github.tmanabe.stream.AveragePoolingTokenFilterFactory"/>
-      <filter class="io.github.tmanabe.stream.AveragePoolingTokenFilterFactory"/> <!-- for testing -->
+      <filter class="io.github.tmanabe.stream.AveragePoolingTokenFilterFactory"/> <!-- For simple testing -->
     </analyzer>
   </fieldType>
 

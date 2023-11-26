@@ -1,7 +1,7 @@
 package io.github.tmanabe.stream;
 
 import io.github.tmanabe.PythonProcess;
-import io.github.tmanabe.Safetensors;
+import io.github.tmanabe.SafetensorsViewer;
 import org.apache.lucene.analysis.Tokenizer;
 import org.apache.lucene.analysis.TokenizerFactory;
 import org.apache.lucene.util.AttributeFactory;
@@ -17,9 +17,9 @@ public class DistilBertJapaneseTokenizerFactory extends TokenizerFactory {
         super(args);
         PythonProcess.HealthChecker healthChecker = (pythonProcess) -> {
             pythonProcess.write("ダミー入力");
-            Safetensors safetensors = pythonProcess.read();
+            SafetensorsViewer safetensorsViewer = pythonProcess.read();
             {
-                LongBuffer inputIDs = safetensors.getLongBuffer("input_ids");
+                LongBuffer inputIDs = safetensorsViewer.getLongBuffer("input_ids");
                 assert inputIDs.limit() == 5;
                 assert inputIDs.get(0) == 2L;
                 assert inputIDs.get(1) == 295L;
@@ -28,7 +28,7 @@ public class DistilBertJapaneseTokenizerFactory extends TokenizerFactory {
                 assert inputIDs.get(4) == 3L;
             }
             {
-                LongBuffer attentionMask = safetensors.getLongBuffer("attention_mask");
+                LongBuffer attentionMask = safetensorsViewer.getLongBuffer("attention_mask");
                 assert attentionMask.limit() == 5;
                 for (int i = 0; i < 5; ++i) assert 1L == attentionMask.get(i);
             }

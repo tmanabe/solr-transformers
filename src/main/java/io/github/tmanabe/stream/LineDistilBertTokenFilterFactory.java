@@ -1,8 +1,8 @@
 package io.github.tmanabe.stream;
 
 import io.github.tmanabe.PythonProcess;
-import io.github.tmanabe.Safetensors;
 import io.github.tmanabe.SafetensorsBuilder;
+import io.github.tmanabe.SafetensorsViewer;
 import org.apache.lucene.analysis.TokenFilterFactory;
 import org.apache.lucene.analysis.TokenStream;
 
@@ -21,9 +21,9 @@ public class LineDistilBertTokenFilterFactory extends TokenFilterFactory {
             safetensorsBuilder.add("input_ids", Arrays.asList(1, 5), new long[]{2L, 295L, 2607L, 3029L, 3L});
             safetensorsBuilder.add("attention_mask", Arrays.asList(1, 5), new long[]{1, 1, 1, 1, 1});
             pythonProcess.write(safetensorsBuilder);
-            Safetensors safetensors = pythonProcess.read();
+            SafetensorsViewer safetensorsViewer = pythonProcess.read();
             {
-                FloatBuffer lastHiddenState = safetensors.getFloatBuffer("last_hidden_state");
+                FloatBuffer lastHiddenState = safetensorsViewer.getFloatBuffer("last_hidden_state");
                 assert lastHiddenState.limit() == 5 * 768;
                 assert Float.toString(lastHiddenState.get(0)).startsWith("0.442");
                 assert Float.toString(lastHiddenState.get(5 * 768 - 1)).startsWith("0.096");

@@ -1,8 +1,8 @@
 package io.github.tmanabe.stream;
 
 import io.github.tmanabe.PythonProcess;
-import io.github.tmanabe.Safetensors;
 import io.github.tmanabe.SafetensorsBuilder;
+import io.github.tmanabe.SafetensorsViewer;
 import io.github.tmanabe.TensorSummarizer;
 import io.github.tmanabe.attribute.IntegerListAttribute;
 import io.github.tmanabe.attribute.LongArrayAttribute;
@@ -26,7 +26,7 @@ public class PythonTokenFilter extends TokenFilter {
     private final FloatArrayAttribute floatArrayAttribute = addAttribute(FloatArrayAttribute.class);
     private final CharTermAttribute charTermAttribute = addAttribute(CharTermAttribute.class);  // For debugging
 
-    private Safetensors safetensors = null;
+    private SafetensorsViewer safetensorsViewer = null;
     private Queue<String> tensorNamesToOutput = null;
 
     public PythonTokenFilter(TokenStream input, PythonProcess pythonProcess) {
@@ -36,7 +36,7 @@ public class PythonTokenFilter extends TokenFilter {
 
     @Override
     public final boolean incrementToken() throws IOException {
-        if (null == safetensors) {
+        if (null == safetensorsViewer) {
             SafetensorsBuilder safetensorsBuilder = new SafetensorsBuilder();
             while (input.incrementToken()) {
                 long[] longArray = longArrayAttribute.get();
@@ -50,11 +50,11 @@ public class PythonTokenFilter extends TokenFilter {
             }
             synchronized (pythonProcess) {
                 pythonProcess.write(safetensorsBuilder);
-                safetensors = pythonProcess.read();
+                safetensorsViewer = pythonProcess.read();
             }
         }
         if (null == tensorNamesToOutput) {
-            tensorNamesToOutput = new ArrayDeque<>(safetensors.getHeader().keySet());
+            tensorNamesToOutput = new ArrayDeque<>(safetensorsViewer.getHeader().keySet());
         }
         if (tensorNamesToOutput.isEmpty()) {
             return false;
@@ -62,10 +62,10 @@ public class PythonTokenFilter extends TokenFilter {
             String tensorName = tensorNamesToOutput.poll();
             clearAttributes();
             stringAttribute.set(tensorName);
-            List<Integer> shape = safetensors.getHeader().get(tensorName).getShape();
+            List<Integer> shape = safetensorsViewer.getHeader().get(tensorName).getShape();
             integerListAttribute.set(shape);
             {
-                FloatBuffer floatBuffer = safetensors.getFloatBuffer(tensorName);
+                FloatBuffer floatBuffer = safetensorsViewer.getFloatBuffer(tensorName);
                 float[] floats = new float[floatBuffer.limit()];
                 floatBuffer.get(floats);
                 floatArrayAttribute.setFloatArray(floats);
@@ -78,7 +78,7 @@ public class PythonTokenFilter extends TokenFilter {
     @Override
     public void reset() throws IOException {
         super.reset();
-        safetensors = null;
+        safetensorsViewer = null;
         tensorNamesToOutput = null;
     }
 }

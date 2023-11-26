@@ -75,7 +75,7 @@ public class PythonProcess {
     public void write(SafetensorsBuilder builder) throws IOException {
         try {
             writeContentLength(builder.contentLength());
-            builder.build().save(dataOutputStream);
+            builder.save(dataOutputStream);
             dataOutputStream.flush();
         } catch (IOException e) {
             throw new IOException(readError(), e);
@@ -93,10 +93,10 @@ public class PythonProcess {
         return stringBuilder.toString();
     }
 
-    public Safetensors read() throws IOException {
+    public SafetensorsViewer read() throws IOException {
         try {
             dataInputStream.readLong();  // Skip unused content-length
-            return Safetensors.load(dataInputStream);
+            return SafetensorsViewer.load(dataInputStream);
         } catch (IOException e) {
             throw new IOException(readError(), e);
         }
